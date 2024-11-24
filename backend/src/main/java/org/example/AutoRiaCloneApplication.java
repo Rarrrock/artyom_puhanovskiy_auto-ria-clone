@@ -1,4 +1,4 @@
-package org.example.auto_ria_clone.backend;
+package org.example;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
