@@ -24,6 +24,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING) // Храню роль в виде строки в БД
     @Column(nullable = false)
-    private String role = "USER"; // По умолчанию роль USER
+    private RoleEnum role = RoleEnum.USER; // По умолчанию устанавливаю роль USER
 }

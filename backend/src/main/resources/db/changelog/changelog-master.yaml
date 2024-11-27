@@ -1,3 +1,16 @@
 databaseChangeLog:
-        - include:
-            file: db/changelog/initial-setup.yaml
+  - changeSet:
+      id: update-users-table-for-role-enum
+      author: root
+      changes:
+        - modifyDataType:
+            tableName: users
+            columnName: role
+            newDataType: VARCHAR(255)
+        - update:
+            tableName: users
+            columns:
+              - column:
+                  name: role
+                  value: USER
+            where: role IS NULL

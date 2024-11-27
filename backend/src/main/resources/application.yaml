@@ -22,7 +22,7 @@ spring:
   # Добавляю секретный ключ для JWT
   security:
     jwt:
-      secret-key: "super-secret-key-that-is-long-enough-for-security" # Ваш секретный ключ
+      secret-key: "0123456789supersecretkeythatislongenoughforsecurity" # Ваш секретный ключ
 
 server:
   port: 8080

@@ -7,6 +7,7 @@ import org.example.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor // Генерирую конструктор с финальными полями
@@ -47,5 +48,10 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long id) {
         // Удаляю пользователя по ID
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 }
