@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,4 +30,7 @@ public class User {
     @Enumerated(EnumType.STRING) // Храню роль в виде строки в БД
     @Column(nullable = false)
     private RoleEnum role = RoleEnum.USER; // По умолчанию устанавливаю роль USER
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Favorite> favorites = new ArrayList<>();
 }

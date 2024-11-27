@@ -14,3 +14,41 @@ databaseChangeLog:
                   name: role
                   value: USER
             where: role IS NULL
+
+  - changeSet:
+      id: 002-add-favorites-table
+      author: root
+      changes:
+        - createTable:
+            tableName: favorites
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    autoIncrement: true
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: car_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_favorites_user_id
+            baseTableName: favorites
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            constraintName: fk_favorites_car_id
+            baseTableName: favorites
+            baseColumnNames: car_id
+            referencedTableName: cars
+            referencedColumnNames: id
+            onDelete: CASCADE
