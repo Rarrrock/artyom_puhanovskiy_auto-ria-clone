@@ -18,6 +18,9 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Override
     public void addFavorite(User user, Car car) {
+        if (user == null || car == null) {
+            throw new IllegalArgumentException("Пользователь или машина не найдены.");
+        }
         if (favoriteRepository.existsByUserAndCar(user, car)) {
             throw new IllegalArgumentException("Машина уже добавлена в избранное.");
         }
@@ -27,6 +30,9 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Override
     public void removeFavorite(User user, Car car) {
+        if (user == null || car == null) {
+            throw new IllegalArgumentException("Пользователь или машина не найдены.");
+        }
         Favorite favorite = favoriteRepository.findByUserAndCar(user, car)
                 .orElseThrow(() -> new IllegalArgumentException("Машина не найдена в избранном."));
         favoriteRepository.delete(favorite);
@@ -34,6 +40,9 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Override
     public List<Car> getFavorites(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("Пользователь не найден.");
+        }
         return favoriteRepository.findAllCarsByUser(user);
     }
 }

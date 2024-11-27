@@ -6,6 +6,8 @@ import org.example.entity.User;
 import org.example.service.CarService;
 import org.example.service.FavoriteService;
 import org.example.service.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,27 +23,28 @@ public class FavoriteController {
     private final UserService userService;
 
     @PostMapping("/{carId}")
-    public String addFavorite(@PathVariable Long carId, Authentication authentication) {
+    public ResponseEntity<String> addFavorite(@PathVariable Long carId, Authentication authentication) {
         User user = userService.findByEmail(authentication.getName())
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден."));
         Car car = carService.getCarById(carId);
         favoriteService.addFavorite(user, car);
-        return "Машина добавлена в избранное";
+        return ResponseEntity.status(HttpStatus.CREATED).body("Машина добавлена в избранное.");
     }
 
     @DeleteMapping("/{carId}")
-    public String removeFavorite(@PathVariable Long carId, Authentication authentication) {
+    public ResponseEntity<String> removeFavorite(@PathVariable Long carId, Authentication authentication) {
         User user = userService.findByEmail(authentication.getName())
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден."));
         Car car = carService.getCarById(carId);
         favoriteService.removeFavorite(user, car);
-        return "Машина удалена из избранного";
+        return ResponseEntity.ok("Машина удалена из избранного.");
     }
 
     @GetMapping
-    public List<Car> getFavorites(Authentication authentication) {
+    public ResponseEntity<List<Car>> getFavorites(Authentication authentication) {
         User user = userService.findByEmail(authentication.getName())
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
-        return favoriteService.getFavorites(user);
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден."));
+        List<Car> favorites = favoriteService.getFavorites(user);
+        return ResponseEntity.ok(favorites);
     }
 }

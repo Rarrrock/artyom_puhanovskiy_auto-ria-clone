@@ -52,3 +52,11 @@ databaseChangeLog:
             referencedTableName: cars
             referencedColumnNames: id
             onDelete: CASCADE
+  - changeSet:
+      id: fix-favorites-id-auto-increment
+      author: root
+      changes:
+        - modifyDataType:
+            tableName: favorites
+            columnName: id
+            newDataType: BIGINT AUTO_INCREMENT
