@@ -8,6 +8,7 @@ import org.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class CarController {
     }
 
     // Добавляю новую машину
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Car> createCar(@RequestBody CarRequest carRequest) {
         // Ищу владельца по ID
@@ -60,6 +62,7 @@ public class CarController {
     }
 
     // Обновляю данные машины
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Car> updateCar(@PathVariable Long id, @RequestBody Car carDetails) {
         Car updatedCar = carService.updateCar(id, carDetails);
@@ -67,6 +70,7 @@ public class CarController {
     }
 
     // Удаляю машину по ID
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCar(@PathVariable Long id) {
         carService.deleteCar(id);

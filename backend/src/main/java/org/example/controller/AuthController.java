@@ -20,21 +20,24 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
+    // Регистрирую пользователя
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
         authService.register(request);
         return ResponseEntity.ok("Пользователь успешно зарегистрирован!");
     }
 
+    // Логин пользователя
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
         String token = authService.login(request);
         return ResponseEntity.ok(token);
     }
 
+    // Получаю информацию о себе
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
-        String email = (String) authentication.getPrincipal();
+        String email = authentication.getName();
         UserResponse response = authService.getCurrentUser(email);
         return ResponseEntity.ok(response);
     }

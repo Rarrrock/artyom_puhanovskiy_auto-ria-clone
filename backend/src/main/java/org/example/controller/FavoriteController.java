@@ -22,6 +22,7 @@ public class FavoriteController {
     private final CarService carService;
     private final UserService userService;
 
+    // Добавляю в Избранное
     @PostMapping("/{carId}")
     public ResponseEntity<String> addFavorite(@PathVariable Long carId, Authentication authentication) {
         User user = userService.findByEmail(authentication.getName())
@@ -31,6 +32,7 @@ public class FavoriteController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Машина добавлена в избранное.");
     }
 
+    // Удаляю из Избранного
     @DeleteMapping("/{carId}")
     public ResponseEntity<String> removeFavorite(@PathVariable Long carId, Authentication authentication) {
         User user = userService.findByEmail(authentication.getName())
@@ -40,6 +42,7 @@ public class FavoriteController {
         return ResponseEntity.ok("Машина удалена из избранного.");
     }
 
+    // Получаю Избранное
     @GetMapping
     public ResponseEntity<List<Car>> getFavorites(Authentication authentication) {
         User user = userService.findByEmail(authentication.getName())
