@@ -1,6 +1,5 @@
 package org.example.config;
 
-
 import org.example.service.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Только для админов
                         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN") // Для пользователей и админов
                         .requestMatchers("/api/favorites/**").hasAnyRole("USER", "ADMIN") // Доступ к избранному
+                        .requestMatchers("/api/comments/**").hasAnyRole("USER", "ADMIN") // Доступ к комментариям
                         .anyRequest().authenticated()) // Остальные запросы требуют авторизации
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
