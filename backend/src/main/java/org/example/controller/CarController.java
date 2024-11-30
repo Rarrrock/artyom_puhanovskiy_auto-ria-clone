@@ -1,75 +1,56 @@
 package org.example.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.example.dto.CarRequest;
-import org.example.entity.Car;
-import org.example.entity.User;
+import org.example.dto.CarResponse;
 import org.example.service.CarService;
 import org.example.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/cars")
+@RequestMapping("/api/cars")
+@RequiredArgsConstructor
 public class CarController {
 
-    @Autowired
-    private CarService carService;
+    private final CarService carService;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService; // Добавляю поле для работы с UserService
-
-    // Получаю список всех машин
+    // Получаю список всех Машин
     @GetMapping
-    public ResponseEntity<List<Car>> getAllCars() {
-        List<Car> cars = carService.getAllCars();
-        return ResponseEntity.ok(cars);
+    public ResponseEntity<List<CarResponse>> getAllCars() {
+        return ResponseEntity.ok(carService.getAllCars());
     }
 
-    // Добавляю новую машину
+    // Добавляю новую Машину
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<Car> createCar(@RequestBody CarRequest carRequest) {
-        // Ищу владельца по ID
-        User owner = null;
-        if (carRequest.getOwnerId() != null) {
-            owner = userService.getUserById(carRequest.getOwnerId()); // Теперь userService доступен
-        }
-
-        // Создаю объект машины
-        Car car = new Car();
-        car.setModel(carRequest.getModel());
-        car.setEnginePower(carRequest.getEnginePower());
-        car.setTorque(carRequest.getTorque());
-        car.setOwner(owner);
-        car.setLastMaintenanceTimestamp(carRequest.getLastMaintenanceTimestamp());
-
-        // Сохраняю машину через сервис
-        Car createdCar = carService.createCar(car);
-
+    public ResponseEntity<CarResponse> createCar(@RequestBody CarRequest carRequest, Authentication authentication) {
+        Long ownerId = carRequest.getOwnerId(); // ID владельца
+        CarResponse createdCar = carService.createCar(carRequest, ownerId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCar);
     }
 
     // Получаю машину по ID
     @GetMapping("/{id}")
-    public ResponseEntity<Car> getCarById(@PathVariable Long id) {
-        Car car = carService.getCarById(id);
-        return ResponseEntity.ok(car);
+    public ResponseEntity<CarResponse> getCarById(@PathVariable Long id) {
+        return ResponseEntity.ok(carService.getCarById(id));
     }
 
-    // Обновляю данные машины
+    // Обновляю данные Машины
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<Car> updateCar(@PathVariable Long id, @RequestBody Car carDetails) {
-        Car updatedCar = carService.updateCar(id, carDetails);
+    public ResponseEntity<CarResponse> updateCar(@PathVariable Long id, @RequestBody CarRequest carRequest) {
+        CarResponse updatedCar = carService.updateCar(id, carRequest);
         return ResponseEntity.ok(updatedCar);
     }
 
-    // Удаляю машину по ID
+    // Удаляю Машину по ID
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCar(@PathVariable Long id) {
@@ -77,17 +58,17 @@ public class CarController {
         return ResponseEntity.noContent().build();
     }
 
-    // Добавляю фильтрацию машин по параметрам
+    // Получаю машины с фильтрацией
     @GetMapping("/filter")
-    public ResponseEntity<List<Car>> filterCars(
+    public ResponseEntity<List<CarResponse>> filterCars(
             @RequestParam(required = false) Integer minEnginePower,
             @RequestParam(required = false) Integer maxEnginePower,
             @RequestParam(required = false) Long ownerId,
             @RequestParam(required = false) Long minTimestamp,
             @RequestParam(required = false) Long maxTimestamp) {
 
-        // Фильтрую машины через сервис
-        List<Car> filteredCars = carService.filterCars(minEnginePower, maxEnginePower, ownerId, minTimestamp, maxTimestamp);
+        // Вызываю метод фильтрации из CarService
+        List<CarResponse> filteredCars = carService.filterCars(minEnginePower, maxEnginePower, ownerId, minTimestamp, maxTimestamp);
         return ResponseEntity.ok(filteredCars);
     }
 }

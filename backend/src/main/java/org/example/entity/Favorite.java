@@ -20,6 +20,10 @@ public class Favorite {
     private User user; // Пользователь, добавивший машину в избранное
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "car_id", nullable = false)
+    @JoinColumn(name = "car_id", nullable = true) // Разрешаю null !!!
     private Car car; // Машина, добавленная в избранное
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ad_id")
+    private Ad ad; // Объявление, добавленное в избранное
 }

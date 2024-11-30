@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-// Интерфейс для взаимодействия с базой данных
 @Repository
 public interface CarRepository extends JpaRepository<Car, Long> {
 

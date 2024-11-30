@@ -1,8 +1,11 @@
 package org.example.controller;
 
-import org.example.entity.User;
+import lombok.RequiredArgsConstructor;
+import org.example.dto.UserRequest;
+import org.example.dto.UserResponse;
 import org.example.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,43 +13,46 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     // Получаю всех пользователей
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     // Получаю пользователя по ID
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
     // Создаю нового пользователя
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
+    public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
+        UserResponse createdUser = userService.createUser(userRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     // Обновляю пользователя по ID
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User user) {
-        return userService.updateUser(id, user);
+    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserRequest userRequest) {
+        UserResponse updatedUser = userService.updateUser(id, userRequest);
+        return ResponseEntity.ok(updatedUser);
     }
 
     // Удаляю пользователя по ID
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }
