@@ -2,6 +2,7 @@ package org.example.service;
 
 import org.example.dto.AdRequest;
 import org.example.dto.AdResponse;
+import org.example.dto.AdStatisticsResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,4 +18,7 @@ public interface AdService {
 
     // Фильтрую Объявления по заданным параметрам
     List<AdResponse> filterAds(BigDecimal minPrice, BigDecimal maxPrice, String currency, String status);
+
+    // Создаю запрос на сбор статистики
+    List<AdStatisticsResponse> getStatistics(String email);
 }

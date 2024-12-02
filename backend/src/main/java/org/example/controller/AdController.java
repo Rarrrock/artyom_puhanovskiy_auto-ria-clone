@@ -3,6 +3,7 @@ package org.example.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.AdRequest;
 import org.example.dto.AdResponse;
+import org.example.dto.AdStatisticsResponse;
 import org.example.service.AdService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -65,5 +66,13 @@ public class AdController {
                                                       @RequestParam(required = false) String status) {
         List<AdResponse> filteredAds = adService.filterAds(minPrice, maxPrice, currency, status);
         return ResponseEntity.ok(filteredAds);
+    }
+
+    // Запрос на сбор статистики
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/statistics")
+    public ResponseEntity<List<AdStatisticsResponse>> getStatistics(Authentication authentication) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(adService.getStatistics(email));
     }
 }

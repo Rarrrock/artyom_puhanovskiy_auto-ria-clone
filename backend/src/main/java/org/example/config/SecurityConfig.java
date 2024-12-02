@@ -29,6 +29,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll() // Открытые эндпоинты для авторизации и регистрации
                         .requestMatchers("/api/ads", "/api/ads/filter", "/api/cars", "/api/comments/**").permitAll() // Доступ для BUYER
                         .requestMatchers("/api/favorites/**").hasAnyRole("ADMIN", "MANAGER", "USER") // Все, кроме BUYER
+                        .requestMatchers("/api/ads/statistics/**").hasAnyRole("ADMIN", "MANAGER", "USER") // Все, кроме BUYER
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Полный доступ только для админов
                         .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MANAGER") // Доступ для админа и менеджера
                         .anyRequest().authenticated()) // Остальные запросы требуют авторизации

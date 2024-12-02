@@ -26,4 +26,10 @@ public interface AdRepository extends JpaRepository<Ad, Long> {
 
     @Query("SELECT COUNT(a) FROM Ad a WHERE a.owner.id = :ownerId")
     long countByOwnerId(@Param("ownerId") Long ownerId);
+
+    @Query("SELECT a.id, a.title, COUNT(v.id) as views, AVG(a.price) as avgPrice " +
+            "FROM Ad a LEFT JOIN View v ON a.id = v.ad.id " +
+            "WHERE a.owner.id = :ownerId " +
+            "GROUP BY a.id, a.title")
+    List<Object[]> fetchAdStatistics(@Param("ownerId") Long ownerId);
 }

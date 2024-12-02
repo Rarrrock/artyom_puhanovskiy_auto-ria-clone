@@ -3,8 +3,10 @@ package org.example.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.AdRequest;
 import org.example.dto.AdResponse;
+import org.example.dto.AdStatisticsResponse;
 import org.example.entity.Ad;
 import org.example.entity.User;
+import org.example.enums.AccountType;
 import org.example.mapper.AdMapper;
 import org.example.repository.AdRepository;
 import org.example.repository.UserRepository;
@@ -29,7 +31,14 @@ public class AdServiceImpl implements AdService {
         User owner = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден."));
 
-        // TODO: Добавить логику ограничения количества объявлений для базового аккаунта
+        // Проверяю ограничения для BASIC-аккаунта
+        if (owner.getAccountType() == AccountType.BASIC) {
+            long adCount = adRepository.countByOwnerId(owner.getId()); // Метод должен быть реализован в AdRepository
+            if (adCount >= 1) {
+                throw new IllegalArgumentException("Пользователи с BASIC аккаунтом могут создать только одно объявление.");
+            }
+        }
+
         Ad ad = AdMapper.mapToEntity(adRequest, owner);
         return AdMapper.mapToResponse(adRepository.save(ad));
     }
@@ -93,6 +102,28 @@ public class AdServiceImpl implements AdService {
 
         return ads.stream()
                 .map(AdMapper::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Выполняю запрос на сбор статистики
+    @Override
+    public List<AdStatisticsResponse> getStatistics(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден."));
+
+        // Проверяю, что пользователь является PREMIUM
+        if (user.getAccountType() != AccountType.PREMIUM) {
+            throw new SecurityException("Доступ к статистике доступен только для PREMIUM аккаунтов.");
+        }
+
+        // Собираю статистику через репозиторий
+        List<Object[]> rawStats = adRepository.fetchAdStatistics(user.getId());
+        return rawStats.stream()
+                .map(row -> new AdStatisticsResponse(
+                        (Long) row[0], // ID объявления
+                        (String) row[1], // Название
+                        (Integer) row[2], // Количество просмотров
+                        (Double) row[3])) // Средняя цена
                 .collect(Collectors.toList());
     }
 }
