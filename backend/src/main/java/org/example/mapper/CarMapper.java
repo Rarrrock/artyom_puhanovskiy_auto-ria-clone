@@ -6,12 +6,12 @@ import org.example.dto.CarRequest;
 
 public class CarMapper {
     public static Car mapToEntity(CarRequest carRequest) {
-        Car car = new Car();
-        car.setModel(carRequest.getModel());
-        car.setEnginePower(carRequest.getEnginePower());
-        car.setTorque(carRequest.getTorque());
-        car.setLastMaintenanceTimestamp(carRequest.getLastMaintenanceTimestamp());
-        return car;
+        return Car.builder()
+                .model(carRequest.getModel())
+                .enginePower(carRequest.getEnginePower())
+                .torque(carRequest.getTorque())
+                .lastMaintenanceTimestamp(carRequest.getLastMaintenanceTimestamp())
+                .build();
     }
 
     public static CarResponse mapToResponse(Car car) {

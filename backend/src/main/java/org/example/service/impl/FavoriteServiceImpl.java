@@ -5,6 +5,8 @@ import org.example.dto.CarResponse;
 import org.example.dto.UserResponse;
 import org.example.entity.*;
 import org.example.enums.RoleEnum;
+import org.example.mapper.AdMapper;
+import org.example.mapper.CarMapper;
 import org.example.repository.AdRepository;
 import org.example.repository.CarRepository;
 import org.example.repository.FavoriteRepository;
@@ -24,7 +26,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final AdRepository adRepository;
     private final UserService userService;
 
-    // TODO: Подумать как использовать
+    // TODO: Подумать когда использовать
     // Проверяю права пользователя
     private void checkUserAccess(User user, String email) {
         if (!user.getEmail().equals(email) && !userService.isAdminOrManager(email)) {
@@ -64,7 +66,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         User user = fetchUserEntityByEmail(email);
         return favoriteRepository.findAllCarsByUser(user.getId())
                 .stream()
-                .map(this::mapToCarResponse)
+                .map(CarMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -74,7 +76,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         User user = fetchUserEntityByEmail(email);
         return favoriteRepository.findAllAdsByUser(user.getId())
                 .stream()
-                .map(this::mapToAdResponse)
+                .map(AdMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -84,7 +86,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         User user = fetchUserEntityByEmail(email);
         Favorite favorite = favoriteRepository.findByUserAndCarId(user.getId(), carId)
                 .orElseThrow(() -> new IllegalArgumentException("Машина с ID " + carId + " не найдена в избранном."));
-        return mapToCarResponse(favorite.getCar());
+        return CarMapper.mapToResponse(favorite.getCar());
     }
 
     // Получаю объявление из избранного по ID
@@ -93,7 +95,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         User user = fetchUserEntityByEmail(email);
         Favorite favorite = favoriteRepository.findByUserAndAdId(user.getId(), adId)
                 .orElseThrow(() -> new IllegalArgumentException("Объявление с ID " + adId + " не найдено в избранном."));
-        return mapToAdResponse(favorite.getAd());
+        return AdMapper.mapToResponse(favorite.getAd());
     }
 
     // Удаляю машину из избранного по ID
@@ -141,34 +143,5 @@ public class FavoriteServiceImpl implements FavoriteService {
     private UserResponse fetchUserResponseByEmail(String email) {
         return userService.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден."));
-    }
-
-    // TODO: Вынести логику в отдельный класс
-    // Преобразую Car в CarResponse
-    private CarResponse mapToCarResponse(Car car) {
-        return CarResponse.builder()
-                .id(car.getId())
-                .model(car.getModel())
-                .enginePower(car.getEnginePower())
-                .torque(car.getTorque())
-                .ownerEmail(car.getOwner() != null ? car.getOwner().getEmail() : null)
-                .lastMaintenanceTimestamp(car.getLastMaintenanceTimestamp())
-                .build();
-    }
-
-    // TODO: Вынести логику в отдельный класс
-    // Преобразую Ad в AdResponse
-    private AdResponse mapToAdResponse(Ad ad) {
-        return AdResponse.builder()
-                .id(ad.getId())
-                .title(ad.getTitle())
-                .description(ad.getDescription())
-                .price(ad.getPrice())
-                .currency(ad.getCurrency())
-                .status(ad.getStatus())
-                .createdAt(ad.getCreatedAt())
-                .updatedAt(ad.getUpdatedAt())
-                .ownerEmail(ad.getOwner() != null ? ad.getOwner().getEmail() : null)
-                .build();
     }
 }

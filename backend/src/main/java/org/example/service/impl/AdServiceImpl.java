@@ -3,9 +3,7 @@ package org.example.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.AdRequest;
 import org.example.dto.AdResponse;
-import org.example.dto.CarResponse;
 import org.example.entity.Ad;
-import org.example.entity.Car;
 import org.example.entity.User;
 import org.example.mapper.AdMapper;
 import org.example.repository.AdRepository;
@@ -17,8 +15,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.example.mapper.AdMapper.mapToResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -34,13 +30,7 @@ public class AdServiceImpl implements AdService {
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден."));
 
         // TODO: Добавить логику ограничения количества объявлений для базового аккаунта
-        Ad ad = new Ad();
-        ad.setTitle(adRequest.getTitle());
-        ad.setDescription(adRequest.getDescription());
-        ad.setPrice(adRequest.getPrice());
-        ad.setCurrency(adRequest.getCurrency());
-        ad.setOwner(owner);
-
+        Ad ad = AdMapper.mapToEntity(adRequest, owner);
         return AdMapper.mapToResponse(adRepository.save(ad));
     }
 

@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 
 public class CommentMapper {
     public static Comment mapToEntity(CommentRequest request, Ad ad, User user) {
-        Comment comment = new Comment();
-        comment.setText(request.getText());
-        comment.setAd(ad);
-        comment.setUser(user);
-        comment.setCreatedAt(LocalDateTime.now());
-        return comment;
+        return Comment.builder()
+                .text(request.getText())
+                .ad(ad)
+                .user(user)
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 
     public static CommentResponse mapToResponse(Comment comment) {
