@@ -7,6 +7,7 @@ import org.example.entity.Ad;
 import org.example.entity.Comment;
 import org.example.entity.User;
 import org.example.enums.AccountType;
+import org.example.mapper.CommentMapper;
 import org.example.repository.CommentRepository;
 import org.example.repository.AdRepository;
 import org.example.repository.UserRepository;
@@ -36,7 +37,6 @@ public class CommentServiceImpl implements CommentService {
         Ad ad = adRepository.findById(request.getAdId())
                 .orElseThrow(() -> new IllegalArgumentException("Объявление с ID " + request.getAdId() + " не найдено."));
 
-        // Проверка лимита для BASIC аккаунта
         if (user.getAccountType() == AccountType.BASIC) {
             long adCount = adRepository.countByOwnerId(user.getId());
             if (adCount >= 1) {
@@ -44,15 +44,8 @@ public class CommentServiceImpl implements CommentService {
             }
         }
 
-        Comment comment = new Comment();
-        comment.setText(request.getText());
-        comment.setAd(ad);
-        comment.setUser(user);
-        comment.setCreatedAt(LocalDateTime.now());
-
-        Comment savedComment = commentRepository.save(comment);
-        return new CommentResponse(savedComment.getId(), savedComment.getText(),
-                user.getEmail(), savedComment.getCreatedAt());
+        Comment comment = CommentMapper.mapToEntity(request, ad, user);
+        return CommentMapper.mapToResponse(commentRepository.save(comment));
     }
 
     // Получаю все комментарии для объявления
@@ -62,8 +55,7 @@ public class CommentServiceImpl implements CommentService {
         List<Comment> comments = commentRepository.findByAdId(adId);
 
         return comments.stream()
-                .map(comment -> new CommentResponse(comment.getId(), comment.getText(),
-                        comment.getUser().getEmail(), comment.getCreatedAt()))
+                .map(CommentMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -72,8 +64,7 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentResponse> getCommentsByUserForAd(Long adId, Long userId) {
         List<Comment> comments = commentRepository.findByUserIdAndAdId(userId, adId);
         return comments.stream()
-                .map(comment -> new CommentResponse(comment.getId(), comment.getText(),
-                        comment.getUser().getEmail(), comment.getCreatedAt()))
+                .map(CommentMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -82,8 +73,7 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponse getCommentForAdById(Long adId, Long commentId) {
         Comment comment = commentRepository.findByAdIdAndId(adId, commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Комментарий с таким ID не найден"));
-        return new CommentResponse(comment.getId(), comment.getText(),
-                comment.getUser().getEmail(), comment.getCreatedAt());
+        return CommentMapper.mapToResponse(comment);
     }
 
     // Удаляю комментарий
@@ -93,7 +83,6 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("Комментарий с ID " + commentId + " не найден."));
 
         User owner = comment.getUser();
-
         if (!userService.isCurrentUserOrAdmin(owner.getEmail(), owner.getId())) {
             throw new SecurityException("Вы не можете удалить этот комментарий.");
         }

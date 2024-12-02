@@ -29,7 +29,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING) // Храню роль в виде строки в БД
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RoleEnum role = RoleEnum.USER; // По умолчанию устанавливаю роль USER
 

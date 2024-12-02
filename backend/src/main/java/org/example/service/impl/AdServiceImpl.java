@@ -7,6 +7,7 @@ import org.example.dto.CarResponse;
 import org.example.entity.Ad;
 import org.example.entity.Car;
 import org.example.entity.User;
+import org.example.mapper.AdMapper;
 import org.example.repository.AdRepository;
 import org.example.repository.UserRepository;
 import org.example.service.AdService;
@@ -17,6 +18,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.example.mapper.AdMapper.mapToResponse;
+
 @Service
 @RequiredArgsConstructor
 public class AdServiceImpl implements AdService {
@@ -24,7 +27,6 @@ public class AdServiceImpl implements AdService {
     private final AdRepository adRepository;
     private final UserRepository userRepository;
     private final UserService userService;
-
     // Создаю Объявление
     @Override
     public AdResponse createAd(AdRequest adRequest, String email) {
@@ -39,15 +41,14 @@ public class AdServiceImpl implements AdService {
         ad.setCurrency(adRequest.getCurrency());
         ad.setOwner(owner);
 
-        Ad savedAd = adRepository.save(ad);
-        return mapToResponse(savedAd);
+        return AdMapper.mapToResponse(adRepository.save(ad));
     }
 
     // Получаю все Объявления
     @Override
     public List<AdResponse> getAllAds() {
         return adRepository.findAll().stream()
-                .map(this::mapToResponse)
+                .map(AdMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -56,7 +57,7 @@ public class AdServiceImpl implements AdService {
     public AdResponse getAdById(Long id) {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Объявление с ID " + id + " не найдено."));
-        return mapToResponse(ad);
+        return AdMapper.mapToResponse(ad);
     }
 
     // Переписываю Объявление
@@ -76,8 +77,7 @@ public class AdServiceImpl implements AdService {
         existingAd.setPrice(adRequest.getPrice());
         existingAd.setCurrency(adRequest.getCurrency());
 
-        Ad updatedAd = adRepository.save(existingAd);
-        return mapToResponse(updatedAd);
+        return AdMapper.mapToResponse(adRepository.save(existingAd));
     }
 
     // Удаляю Объявление
@@ -95,22 +95,6 @@ public class AdServiceImpl implements AdService {
         adRepository.delete(existingAd);
     }
 
-    // TODO: Вынести логику в отдельный класс
-    // Преобразую Ad в AdResponse
-    private AdResponse mapToResponse(Ad ad) {
-        return AdResponse.builder()
-                .id(ad.getId())
-                .title(ad.getTitle())
-                .description(ad.getDescription())
-                .price(ad.getPrice())
-                .currency(ad.getCurrency())
-                .status(ad.getStatus())
-                .createdAt(ad.getCreatedAt())
-                .updatedAt(ad.getUpdatedAt())
-                .ownerEmail(ad.getOwner() != null ? ad.getOwner().getEmail() : null)
-                .build();
-    }
-
     // Выполняю запрос с фильтрацией
     @Override
     public List<AdResponse> filterAds(BigDecimal minPrice, BigDecimal maxPrice, String currency, String status) {
@@ -118,7 +102,7 @@ public class AdServiceImpl implements AdService {
         List<Ad> ads = adRepository.findFilteredAds(minPrice, maxPrice, currency, status);
 
         return ads.stream()
-                .map(this::mapToResponse)
+                .map(AdMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 }

@@ -2,6 +2,7 @@ package org.example.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import org.example.enums.AccountType;
 import org.example.enums.RoleEnum;
 
 @Data
@@ -12,4 +13,5 @@ public class UserResponse {
     private String email;
     private String password;
     private RoleEnum role;
+    private AccountType accountType;
 }

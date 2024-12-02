@@ -7,6 +7,9 @@ import org.example.dto.UserResponse;
 import org.example.entity.Car;
 import org.example.enums.RoleEnum;
 import org.example.entity.User;
+import org.example.mapper.AdMapper;
+import org.example.mapper.CarMapper;
+import org.example.mapper.UserMapper;
 import org.example.repository.CarRepository;
 import org.example.service.CarService;
 import org.example.service.UserService;
@@ -14,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.example.mapper.CarMapper.mapToResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -26,27 +31,23 @@ public class CarServiceImpl implements CarService {
     @Override
     public List<CarResponse> getAllCars() {
         return carRepository.findAll().stream()
-                .map(this::mapToResponse)
+                .map(CarMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
     // Добавляю новую Машину
     @Override
     public CarResponse createCar(CarRequest carRequest, Long ownerId) {
-        Car car = new Car();
-        car.setModel(carRequest.getModel());
-        car.setEnginePower(carRequest.getEnginePower());
-        car.setTorque(carRequest.getTorque());
-        car.setLastMaintenanceTimestamp(carRequest.getLastMaintenanceTimestamp());
+        Car car = CarMapper.mapToEntity(carRequest);
 
         if (ownerId != null) {
             UserResponse userResponse = userService.getUserById(ownerId);
-            car.setOwner(mapToUser(userResponse));
+            car.setOwner(UserMapper.mapToEntity(userResponse));
         } else {
             car.setOwner(null);
         }
 
-        return mapToResponse(carRepository.save(car));
+        return CarMapper.mapToResponse(carRepository.save(car));
     }
 
     // Получаю Машину по ID
@@ -92,30 +93,6 @@ public class CarServiceImpl implements CarService {
         carRepository.delete(car);
     }
 
-    // TODO: Вынести логику в отдельный класс
-    // Преобразую Car в CarResponse
-    private CarResponse mapToResponse(Car car) {
-        return CarResponse.builder()
-                .id(car.getId())
-                .model(car.getModel())
-                .enginePower(car.getEnginePower())
-                .torque(car.getTorque())
-                .ownerEmail(car.getOwner() != null ? car.getOwner().getEmail() : null)
-                .lastMaintenanceTimestamp(car.getLastMaintenanceTimestamp())
-                .build();
-    }
-
-    // TODO: Вынести логику в отдельный класс
-    // Преобразую UserResponse в User
-    private User mapToUser(UserResponse userResponse) {
-        User user = new User();
-        user.setId(userResponse.getId());
-        user.setUsername(userResponse.getUsername());
-        user.setEmail(userResponse.getEmail());
-        user.setRole(userResponse.getRole());
-        return user;
-    }
-
     // Выполняю запрос с фильтрацией
     @Override
     public List<CarResponse> filterCars(Integer minEnginePower, Integer maxEnginePower, Long ownerId, Long minTimestamp, Long maxTimestamp) {
@@ -123,7 +100,7 @@ public class CarServiceImpl implements CarService {
         List<Car> cars = carRepository.findFilteredCars(minEnginePower, maxEnginePower, ownerId, minTimestamp, maxTimestamp);
 
         return cars.stream()
-                .map(this::mapToResponse)
+                .map(CarMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 }

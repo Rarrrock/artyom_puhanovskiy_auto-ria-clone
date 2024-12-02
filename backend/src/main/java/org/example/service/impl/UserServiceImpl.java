@@ -6,6 +6,7 @@ import org.example.dto.UserResponse;
 import org.example.enums.AccountType;
 import org.example.enums.RoleEnum;
 import org.example.entity.User;
+import org.example.mapper.UserMapper;
 import org.example.repository.UserRepository;
 import org.example.service.UserService;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class UserServiceImpl implements UserService {
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(this::mapToResponse)
+                .map(UserMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -33,7 +34,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Пользователь с ID " + id + " не найден."));
-        return mapToResponse(user);
+        return UserMapper.mapToResponse(user);
     }
 
     // Создаю и сохраняю нового пользователя
@@ -45,7 +46,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(userRequest.getPassword());
         user.setRole(userRequest.getRole());
         user.setAccountType(userRequest.getAccountType() != null ? userRequest.getAccountType() : AccountType.BASIC); // Установка BASIC по умолчанию
-        return mapToResponse(userRepository.save(user));
+        return UserMapper.mapToResponse(userRepository.save(user));
     }
 
     // Обновляю данные пользователя
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
         existingUser.setEmail(userRequest.getEmail());
         existingUser.setPassword(userRequest.getPassword());
         existingUser.setRole(userRequest.getRole());
-        return mapToResponse(userRepository.save(existingUser));
+        return UserMapper.mapToResponse(userRepository.save(existingUser));
     }
 
     // Обновляю роль пользователя
@@ -85,19 +86,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserResponse> findByEmail(String email) {
         return userRepository.findByEmail(email)
-                .map(this::mapToResponse);
-    }
-
-    // TODO: Вынести логику в отдельный класс
-    // Преобразую User в UserResponse
-    private UserResponse mapToResponse(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .password(user.getPassword())
-                .role(user.getRole())
-                .build();
+                .map(UserMapper::mapToResponse);
     }
 
     // Проверяю роль
