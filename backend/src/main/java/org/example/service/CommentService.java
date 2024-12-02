@@ -13,7 +13,7 @@ public interface CommentService {
     // Получаю все комментарии для объявления
     List<CommentResponse> getCommentsForAd(Long adId);
 
-    // Получить комментарии пользователя для объявления
+    // Получаю комментарии пользователя для объявления
     List<CommentResponse> getCommentsByUserForAd(Long adId, Long userId);
 
     // Получить конкретный комментарий по ID и ID объявления

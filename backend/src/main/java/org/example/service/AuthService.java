@@ -1,12 +1,12 @@
 package org.example.service;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.LoginRequest;
 import org.example.dto.RegisterRequest;
 import org.example.dto.UserRequest;
 import org.example.dto.UserResponse;
-import org.example.entity.RoleEnum;
+import org.example.enums.AccountType;
+import org.example.enums.RoleEnum;
 import org.example.entity.User;
 import org.example.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,12 +26,12 @@ public class AuthService {
             throw new IllegalArgumentException("Email уже используется!");
         }
 
-        // Создаю DTO для передачи данных
         UserRequest userRequest = UserRequest.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(RoleEnum.USER) // Устанавливаю роль пользователя по умолчанию
+                .role(RoleEnum.USER) // По умолчанию роль - USER
+                .accountType(AccountType.BASIC) // По умолчанию тип аккаунта - BASIC
                 .build();
 
         userService.createUser(userRequest);
@@ -48,21 +48,11 @@ public class AuthService {
         }
 
         // Генерирую токен
-        return jwtUtil.generateToken(userResponse.getEmail(), userResponse.getRole());
+        return jwtUtil.generateToken(userResponse.getEmail(), userResponse.getRole().name());
     }
 
     public UserResponse getCurrentUser(String email) {
         return userService.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден!"));
-    }
-
-    // Преобразую UserResponse в User (для работы с базой)
-    private User mapToUser(UserResponse userResponse) {
-        User user = new User();
-        user.setId(userResponse.getId());
-        user.setUsername(userResponse.getUsername());
-        user.setEmail(userResponse.getEmail());
-        user.setRole(userResponse.getRole() != null ? RoleEnum.valueOf(userResponse.getRole()) : null);
-        return user;
     }
 }

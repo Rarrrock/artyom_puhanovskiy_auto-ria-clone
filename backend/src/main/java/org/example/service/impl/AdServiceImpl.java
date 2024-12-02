@@ -10,6 +10,7 @@ import org.example.entity.User;
 import org.example.repository.AdRepository;
 import org.example.repository.UserRepository;
 import org.example.service.AdService;
+import org.example.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,6 +23,7 @@ public class AdServiceImpl implements AdService {
 
     private final AdRepository adRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
 
     // Создаю Объявление
     @Override
@@ -29,6 +31,7 @@ public class AdServiceImpl implements AdService {
         User owner = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден."));
 
+        // TODO: Добавить логику ограничения количества объявлений для базового аккаунта
         Ad ad = new Ad();
         ad.setTitle(adRequest.getTitle());
         ad.setDescription(adRequest.getDescription());
@@ -48,7 +51,7 @@ public class AdServiceImpl implements AdService {
                 .collect(Collectors.toList());
     }
 
-    // Получаю Объявление
+    // Получаю Объявление по ID
     @Override
     public AdResponse getAdById(Long id) {
         Ad ad = adRepository.findById(id)
@@ -62,6 +65,12 @@ public class AdServiceImpl implements AdService {
         Ad existingAd = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Объявление с ID " + id + " не найдено."));
 
+        User owner = existingAd.getOwner();
+
+        if (!userService.isCurrentUserOrAdmin(owner.getEmail(), owner.getId())) {
+            throw new SecurityException("Недостаточно прав для выполнения операции.");
+        }
+
         existingAd.setTitle(adRequest.getTitle());
         existingAd.setDescription(adRequest.getDescription());
         existingAd.setPrice(adRequest.getPrice());
@@ -74,11 +83,19 @@ public class AdServiceImpl implements AdService {
     // Удаляю Объявление
     @Override
     public void deleteAd(Long id) {
-        Ad ad = adRepository.findById(id)
+        Ad existingAd = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Объявление с ID " + id + " не найдено."));
-        adRepository.delete(ad);
+
+        User owner = existingAd.getOwner();
+
+        if (!userService.isCurrentUserOrAdmin(owner.getEmail(), owner.getId())) {
+            throw new SecurityException("Недостаточно прав для выполнения операции.");
+        }
+
+        adRepository.delete(existingAd);
     }
 
+    // TODO: Вынести логику в отдельный класс
     // Преобразую Ad в AdResponse
     private AdResponse mapToResponse(Ad ad) {
         return AdResponse.builder()
@@ -97,10 +114,9 @@ public class AdServiceImpl implements AdService {
     // Выполняю запрос с фильтрацией
     @Override
     public List<AdResponse> filterAds(BigDecimal minPrice, BigDecimal maxPrice, String currency, String status) {
-        // Вызов фильтрации через репозиторий
+
         List<Ad> ads = adRepository.findFilteredAds(minPrice, maxPrice, currency, status);
 
-        // Преобразование результатов в DTO
         return ads.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());

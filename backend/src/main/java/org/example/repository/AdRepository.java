@@ -18,4 +18,12 @@ public interface AdRepository extends JpaRepository<Ad, Long> {
                              @Param("maxPrice") BigDecimal maxPrice,
                              @Param("currency") String currency,
                              @Param("status") String status);
+
+    // TODO: Использую позже
+    // Возвращает список всех объявлений пользователя по его имейлу
+    @Query("SELECT a FROM Ad a WHERE a.owner.email = :email")
+    List<Ad> findByOwnerEmail(@Param("email") String email);
+
+    @Query("SELECT COUNT(a) FROM Ad a WHERE a.owner.id = :ownerId")
+    long countByOwnerId(@Param("ownerId") Long ownerId);
 }

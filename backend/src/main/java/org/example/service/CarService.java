@@ -9,6 +9,7 @@ import java.util.List;
 
 // Основные методы работы с Машинами
 public interface CarService {
+
     List<CarResponse> getAllCars(); // Получаю список всех Машин
     CarResponse createCar(CarRequest carRequest, Long ownerId); // Добавляю новую Машину
     CarResponse getCarById(Long id); // Получаю Машину по ID

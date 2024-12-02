@@ -3,6 +3,8 @@ package org.example.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.UserRequest;
 import org.example.dto.UserResponse;
+import org.example.enums.AccountType;
+import org.example.enums.RoleEnum;
 import org.example.entity.User;
 import org.example.repository.UserRepository;
 import org.example.service.UserService;
@@ -42,6 +44,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userRequest.getEmail());
         user.setPassword(userRequest.getPassword());
         user.setRole(userRequest.getRole());
+        user.setAccountType(userRequest.getAccountType() != null ? userRequest.getAccountType() : AccountType.BASIC); // Установка BASIC по умолчанию
         return mapToResponse(userRepository.save(user));
     }
 
@@ -58,6 +61,20 @@ public class UserServiceImpl implements UserService {
         return mapToResponse(userRepository.save(existingUser));
     }
 
+    // Обновляю роль пользователя
+    @Override
+    public void updateUserRole(Long userId, RoleEnum newRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь с ID " + userId + " не найден."));
+
+        if (user.getRole() == RoleEnum.ADMIN || user.getRole() == RoleEnum.MANAGER) {
+            throw new SecurityException("Невозможно изменить роль ADMIN или MANAGER.");
+        }
+
+        user.setRole(newRole);
+        userRepository.save(user);
+    }
+
     // Удаляю пользователя по ID
     @Override
     public void deleteUser(Long id) {
@@ -71,6 +88,7 @@ public class UserServiceImpl implements UserService {
                 .map(this::mapToResponse);
     }
 
+    // TODO: Вынести логику в отдельный класс
     // Преобразую User в UserResponse
     private UserResponse mapToResponse(User user) {
         return UserResponse.builder()
@@ -78,7 +96,26 @@ public class UserServiceImpl implements UserService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .password(user.getPassword())
-                .role(user.getRole().name())
+                .role(user.getRole())
                 .build();
     }
+
+    // Проверяю роль
+    @Override
+    public boolean isAdminOrManager(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+        return user.getRole() == RoleEnum.ADMIN || user.getRole() == RoleEnum.MANAGER;
+    }
+
+    // Проверяю роль
+    @Override
+    public boolean isCurrentUserOrAdmin(String email, Long userId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден."));
+        return user.getId().equals(userId) || user.getRole() == RoleEnum.ADMIN;
+    }
+
+    // TODO: Добавить следующую логику:
+    // Обновление аккаунта для роли USER - BASIC или PREMIUM
 }

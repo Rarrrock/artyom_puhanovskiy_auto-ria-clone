@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.enums.AccountType;
+import org.example.enums.RoleEnum;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,4 +35,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Favorite> favorites = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    private AccountType accountType;
 }

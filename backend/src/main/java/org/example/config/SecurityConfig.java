@@ -26,11 +26,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Доступ к аутентификации и регистрации
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Только для админов
-                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN") // Для пользователей и админов
-                        .requestMatchers("/api/favorites/**").hasAnyRole("USER", "ADMIN") // Доступ к избранному
-                        .requestMatchers("/api/comments/**").hasAnyRole("USER", "ADMIN") // Доступ к комментариям
+                        .requestMatchers("/api/auth/**").permitAll() // Открытые эндпоинты для авторизации и регистрации
+                        .requestMatchers("/api/ads", "/api/ads/filter", "/api/cars", "/api/comments/**").permitAll() // Доступ для BUYER
+                        .requestMatchers("/api/favorites/**").hasAnyRole("ADMIN", "MANAGER", "USER") // Все, кроме BUYER
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Полный доступ только для админов
+                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MANAGER") // Доступ для админа и менеджера
                         .anyRequest().authenticated()) // Остальные запросы требуют авторизации
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -39,7 +39,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // URL фронтенда
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -56,6 +56,6 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager(); // Аутентификация через менеджер
+        return configuration.getAuthenticationManager();
     }
 }

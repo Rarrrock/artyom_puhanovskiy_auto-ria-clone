@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.CarRequest;
 import org.example.dto.CarResponse;
 import org.example.service.CarService;
-import org.example.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,15 +18,14 @@ import java.util.List;
 public class CarController {
 
     private final CarService carService;
-    private final UserService userService;
 
-    // Получаю список всех Машин
+    // Получаю список всех Машин (доступно всем)
     @GetMapping
     public ResponseEntity<List<CarResponse>> getAllCars() {
         return ResponseEntity.ok(carService.getAllCars());
     }
 
-    // Добавляю новую Машину
+    // Добавляю новую Машину (Только ADMIN)
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<CarResponse> createCar(@RequestBody CarRequest carRequest, Authentication authentication) {
@@ -36,13 +34,13 @@ public class CarController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCar);
     }
 
-    // Получаю машину по ID
+    // Получаю машину по ID (доступно всем)
     @GetMapping("/{id}")
     public ResponseEntity<CarResponse> getCarById(@PathVariable Long id) {
         return ResponseEntity.ok(carService.getCarById(id));
     }
 
-    // Обновляю данные Машины
+    // Обновляю данные Машины (Только ADMIN)
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<CarResponse> updateCar(@PathVariable Long id, @RequestBody CarRequest carRequest) {
@@ -50,7 +48,7 @@ public class CarController {
         return ResponseEntity.ok(updatedCar);
     }
 
-    // Удаляю Машину по ID
+    // Удаляю Машину по ID (Только ADMIN)
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCar(@PathVariable Long id) {
@@ -58,7 +56,7 @@ public class CarController {
         return ResponseEntity.noContent().build();
     }
 
-    // Получаю машины с фильтрацией
+    // Получаю машины с фильтрацией (доступно всем)
     @GetMapping("/filter")
     public ResponseEntity<List<CarResponse>> filterCars(
             @RequestParam(required = false) Integer minEnginePower,

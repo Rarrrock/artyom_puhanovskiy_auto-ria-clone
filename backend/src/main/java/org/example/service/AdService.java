@@ -14,5 +14,7 @@ public interface AdService {
     AdResponse getAdById(Long id);  // Получаю Объявление по ID
     AdResponse updateAd(Long id, AdRequest adRequest);  // Переписываю Объявление
     void deleteAd(Long id);  // Удаляю Объявление
+
+    // Фильтрую Объявления по заданным параметрам
     List<AdResponse> filterAds(BigDecimal minPrice, BigDecimal maxPrice, String currency, String status);
 }

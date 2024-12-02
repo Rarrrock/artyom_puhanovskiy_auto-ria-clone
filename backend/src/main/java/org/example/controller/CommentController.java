@@ -3,9 +3,9 @@ package org.example.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.CommentRequest;
 import org.example.dto.CommentResponse;
-import org.example.entity.Comment;
 import org.example.service.CommentService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,38 +18,42 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    // Добавляю комментарий к объявлению
+    // Добавляю комментарий к объявлению (только 'ADMIN', 'USER', 'MANAGER')
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'MANAGER')")
     @PostMapping
     public ResponseEntity<CommentResponse> addComment(@RequestBody CommentRequest request, Authentication authentication) {
         CommentResponse commentResponse = commentService.addComment(request, authentication.getName());
         return ResponseEntity.ok(commentResponse);
     }
 
-    // Получаю все комментарии к объявлению
+    // Получаю все комментарии к объявлению (Доступно всем)
     @GetMapping("/ad/{adId}")
     public ResponseEntity<List<CommentResponse>> getCommentsForAd(@PathVariable Long adId) {
         List<CommentResponse> comments = commentService.getCommentsForAd(adId);
         return ResponseEntity.ok(comments);
     }
 
-    // Получаю все комментарии от пользователя для объявления
+    // Получаю все комментарии от пользователя для объявления (только 'ADMIN' и 'MANAGER')
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("/ad/{adId}/user/{userId}")
     public ResponseEntity<List<CommentResponse>> getCommentsByUserForAd(@PathVariable Long adId, @PathVariable Long userId) {
         List<CommentResponse> comments = commentService.getCommentsByUserForAd(adId, userId);
         return ResponseEntity.ok(comments);
     }
 
-    // Получаю конкретный комментарий по ID и ID объявления
+    // Получаю конкретный комментарий по ID и ID объявления (Доступно всем)
     @GetMapping("/ad/{adId}/comment/{commentId}")
     public ResponseEntity<CommentResponse> getCommentForAdById(@PathVariable Long adId, @PathVariable Long commentId) {
         CommentResponse comment = commentService.getCommentForAdById(adId, commentId);
         return ResponseEntity.ok(comment);
     }
 
-    // Удаляю комментарий
+    // Удаляю комментарий (только 'ADMIN' и 'MANAGER')
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @DeleteMapping("/{commentId}")
     public ResponseEntity<String> deleteComment(@PathVariable Long commentId, Authentication authentication) {
         commentService.deleteComment(commentId, authentication.getName());
         return ResponseEntity.ok("Комментарий удален.");
     }
+
 }

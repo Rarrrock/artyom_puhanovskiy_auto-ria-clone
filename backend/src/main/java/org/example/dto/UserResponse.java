@@ -2,6 +2,7 @@ package org.example.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import org.example.enums.RoleEnum;
 
 @Data
 @Builder
@@ -10,6 +11,5 @@ public class UserResponse {
     private String username;
     private String email;
     private String password;
-    private String role;
-
+    private RoleEnum role;
 }

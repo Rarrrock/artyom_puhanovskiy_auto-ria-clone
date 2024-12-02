@@ -19,43 +19,45 @@ public class AdController {
 
     private final AdService adService;
 
-    //  Создаю Объявление
+    // Создание объявления (только USER и ADMIN)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping
     public ResponseEntity<AdResponse> createAd(@RequestBody AdRequest adRequest, Authentication authentication) {
         AdResponse createdAd = adService.createAd(adRequest, authentication.getName());
         return ResponseEntity.ok(createdAd);
     }
 
-    //  Получаю все Объявления
+    // Получение всех объявлений (доступно всем)
     @GetMapping
     public ResponseEntity<List<AdResponse>> getAllAds() {
         List<AdResponse> ads = adService.getAllAds();
         return ResponseEntity.ok(ads);
     }
 
-    //  Получаю Объявление по ID
+    // Получение объявления по ID (доступно всем)
     @GetMapping("/{id}")
     public ResponseEntity<AdResponse> getAdById(@PathVariable Long id) {
         AdResponse ad = adService.getAdById(id);
         return ResponseEntity.ok(ad);
     }
 
-    //  Переписываю Объявление
-    @PreAuthorize("hasRole('ADMIN')")
+    // Редактирование объявления (USER для своих объявлений, MANAGER и ADMIN для любых)
+    @PreAuthorize("hasRole('USER') and @adSecurity.isAdOwner(#id, authentication.name) or hasAnyRole('ADMIN', 'MANAGER')")
     @PutMapping("/{id}")
     public ResponseEntity<AdResponse> updateAd(@PathVariable Long id, @RequestBody AdRequest adRequest) {
         AdResponse updatedAd = adService.updateAd(id, adRequest);
         return ResponseEntity.ok(updatedAd);
     }
 
-    //  Удаляю Объявление
-    @PreAuthorize("hasRole('ADMIN')")
+    // Удаление объявления (USER для своих объявлений, MANAGER и ADMIN для любых)
+    @PreAuthorize("hasRole('USER') and @adSecurity.isAdOwner(#id, authentication.name) or hasAnyRole('ADMIN', 'MANAGER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAd(@PathVariable Long id) {
         adService.deleteAd(id);
         return ResponseEntity.noContent().build();
     }
 
+    // Фильтрация объявлений (доступно всем)
     @GetMapping("/filter")
     public ResponseEntity<List<AdResponse>> filterAds(@RequestParam(required = false) BigDecimal minPrice,
                                                       @RequestParam(required = false) BigDecimal maxPrice,

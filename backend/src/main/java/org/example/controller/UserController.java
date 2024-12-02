@@ -3,6 +3,7 @@ package org.example.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.UserRequest;
 import org.example.dto.UserResponse;
+import org.example.enums.RoleEnum;
 import org.example.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,21 +19,19 @@ public class UserController {
 
     private final UserService userService;
 
-    // Получаю всех пользователей
-    @PreAuthorize("hasRole('ADMIN')")
+    // Получаю всех пользователей (Доступ для "ADMIN", "MANAGER")
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    // Получаю пользователя по ID
-    @PreAuthorize("hasRole('ADMIN')")
+    // Получаю пользователя по ID (Доступ для "ADMIN", "MANAGER")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    // Создаю нового пользователя
+    // Создаю нового пользователя (Только "ADMIN")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
@@ -40,7 +39,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
-    // Обновляю пользователя по ID
+    // Обновляю пользователя по ID (Только "ADMIN")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserRequest userRequest) {
@@ -48,11 +47,23 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    // Удаляю пользователя по ID
+    // Удаляю пользователя по ID (Только "ADMIN")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    // Обновляю роль пользователя по ID (Только "ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}/role")
+    public ResponseEntity<String> updateUserRole(@PathVariable Long id, @RequestBody RoleEnum newRole) {
+        userService.updateUserRole(id, newRole);
+        return ResponseEntity.ok("Роль пользователя успешно обновлена.");
+    }
+
+
+    // TODO: Добавить следующую логику:
+    // Обновление аккаунта для роли USER - BASIC или PREMIUM (Только "ADMIN")
 }

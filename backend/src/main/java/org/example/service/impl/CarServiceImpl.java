@@ -5,7 +5,7 @@ import org.example.dto.CarRequest;
 import org.example.dto.CarResponse;
 import org.example.dto.UserResponse;
 import org.example.entity.Car;
-import org.example.entity.RoleEnum;
+import org.example.enums.RoleEnum;
 import org.example.entity.User;
 import org.example.repository.CarRepository;
 import org.example.service.CarService;
@@ -62,10 +62,18 @@ public class CarServiceImpl implements CarService {
     public CarResponse updateCar(Long id, CarRequest carRequest) {
         Car car = carRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Машина с ID " + id + " не найдена."));
+
+        User owner = car.getOwner();
+
+        if (!userService.isCurrentUserOrAdmin(owner.getEmail(), owner.getId())) {
+            throw new SecurityException("Недостаточно прав для выполнения операции.");
+        }
+
         car.setModel(carRequest.getModel());
         car.setEnginePower(carRequest.getEnginePower());
         car.setTorque(carRequest.getTorque());
         car.setLastMaintenanceTimestamp(carRequest.getLastMaintenanceTimestamp());
+
         return mapToResponse(carRepository.save(car));
     }
 
@@ -74,9 +82,17 @@ public class CarServiceImpl implements CarService {
     public void deleteCar(Long id) {
         Car car = carRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Машина с ID " + id + " не найдена."));
+
+        User owner = car.getOwner();
+
+        if (!userService.isCurrentUserOrAdmin(owner.getEmail(), owner.getId())) {
+            throw new SecurityException("Недостаточно прав для выполнения операции.");
+        }
+
         carRepository.delete(car);
     }
 
+    // TODO: Вынести логику в отдельный класс
     // Преобразую Car в CarResponse
     private CarResponse mapToResponse(Car car) {
         return CarResponse.builder()
@@ -89,23 +105,23 @@ public class CarServiceImpl implements CarService {
                 .build();
     }
 
+    // TODO: Вынести логику в отдельный класс
     // Преобразую UserResponse в User
     private User mapToUser(UserResponse userResponse) {
         User user = new User();
         user.setId(userResponse.getId());
         user.setUsername(userResponse.getUsername());
         user.setEmail(userResponse.getEmail());
-        user.setRole(RoleEnum.valueOf(userResponse.getRole())); // Если role хранится как String
+        user.setRole(userResponse.getRole());
         return user;
     }
 
     // Выполняю запрос с фильтрацией
     @Override
     public List<CarResponse> filterCars(Integer minEnginePower, Integer maxEnginePower, Long ownerId, Long minTimestamp, Long maxTimestamp) {
-        // Вызов фильтрации через репозиторий
+
         List<Car> cars = carRepository.findFilteredCars(minEnginePower, maxEnginePower, ownerId, minTimestamp, maxTimestamp);
 
-        // Преобразование результатов в DTO
         return cars.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());

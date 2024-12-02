@@ -11,15 +11,15 @@ import java.util.Optional;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    // Получить все комментарии по ID объявления
+    // Получаю все комментарии по ID объявления
     @Query("SELECT c FROM Comment c WHERE c.ad.id = :adId")
     List<Comment> findByAdId(Long adId);
 
-    // Получить комментарии пользователя по ID объявления и ID пользователя
+    // Получаю комментарии пользователя по ID объявления и ID пользователя
     @Query("SELECT c FROM Comment c WHERE c.user.id = :userId AND c.ad.id = :adId")
     List<Comment> findByUserIdAndAdId(Long userId, Long adId);
 
-    // Получить комментарий по ID объявления и ID комментария
+    // Получаю комментарий по ID объявления и ID комментария
     @Query("SELECT c FROM Comment c WHERE c.ad.id = :adId AND c.id = :commentId")
     Optional<Comment> findByAdIdAndId(Long adId, Long commentId);
 
